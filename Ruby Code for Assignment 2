@@ -1,0 +1,59 @@
+require 'csv'
+
+# Define a list of keywords and operators
+KEYWORDS = ["if", "else", "while", "do", "for", "int", "float", "char", "bool"]
+OPERATORS = ["+", "-", "*", "/", "%", "=", "==", "!=", "<", ">", "<=", ">="]
+
+# Define a regular expression to match identifiers (variable names)
+IDENTIFIER_REGEX = /^[a-zA-Z_][a-zA-Z0-9_]*$/
+
+# Define a function to generate tokens and lexemes from an input string
+def tokenize(program)
+  tokens = []
+  lexemes = []
+  lines = program.split("\n")
+  lines.each_with_index do |line, line_num|
+    words = line.split(" ")
+    words.each do |word|
+      if KEYWORDS.include?(word)
+        tokens << "keyword"
+        lexemes << word
+      elsif OPERATORS.include?(word)
+        tokens << "operator"
+        lexemes << word
+      elsif word.match(IDENTIFIER_REGEX)
+        tokens << "identifier"
+        lexemes << word
+      else
+        puts "Error: unrecognized token '#{word}' on line #{line_num + 1}"
+      end
+    end
+  end
+  return [tokens, lexemes]
+end
+
+# Define a function to save tokens and lexemes to a CSV file
+def save_tokens(filename, tokens, lexemes)
+  CSV.open(filename, "wb") do |csv|
+    csv << ["Token", "Lexeme"]
+    tokens.each_with_index do |token, i|
+      csv << [token, lexemes[i]]
+    end
+  end
+end
+
+# Test the program with sample input and save the output to a CSV file
+program = <<~END
+  int main() {
+    int x = 3;
+    if (x == 3) {
+      printf("x is 3");
+    } else {
+      printf("x is not 3");
+    }
+    return 0;
+  }
+END
+
+tokens, lexemes = tokenize(program)
+save_tokens("output.csv", tokens, lexemes)
